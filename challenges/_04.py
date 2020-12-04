@@ -4,21 +4,19 @@ from re import compile
 FILE_NUM = '04'
 REQUIRED_FIELDS = ['ecl', 'pid', 'eyr', 'hcl', 'byr', 'iyr', 'hgt']
 VALID_EYE_COLORS = ['amb', 'blu', 'brn', 'gry', 'grn', 'hzl', 'oth']
-HEIGHT_REGEX = compile('(\\d+)(\\w+)')
-HEIGHT_UNIT_CHECKS = {
-    'cm': lambda val: 150 <= int(val) <= 193,
-    'in': lambda val: 59 <= int(val) <= 76
+HEIGHT_UNIT_BOUNDS = {
+    'cm': [150, 193],
+    'in': [59, 76],
 }
 HAIR_COLOR_REGEX = compile('^#[0-9a-f]{6}$')
 
 
 def height_check(val):
-    match = HEIGHT_REGEX.match(val)
-    size = match.group(1)
-    unit = match.group(2)
+    unit, size = val[-2:], val[:-2]
 
-    if unit in HEIGHT_UNIT_CHECKS and size.isnumeric():
-        return HEIGHT_UNIT_CHECKS[unit](size)
+    if unit in HEIGHT_UNIT_BOUNDS and size.isnumeric():
+        min_bound, max_bound = HEIGHT_UNIT_BOUNDS[unit]
+        return min_bound <= int(size) <= max_bound
 
     return False
 
@@ -35,34 +33,33 @@ VALID_CHECKS = {
 
 
 def valid1(passport: dict):
-    return all(column in passport for column in REQUIRED_FIELDS)
+    for column in REQUIRED_FIELDS:
+        if column not in passport:
+            return False
+
+    return True
 
 
 def valid2(passport: dict):
-    if valid1(passport):
-        is_valid = all(VALID_CHECKS[column](passport[column]) for column in REQUIRED_FIELDS)
-        return is_valid
+    for column in REQUIRED_FIELDS:
+        if column not in passport or VALID_CHECKS[column](passport[column]) is False:
+            return False
 
-    return False
+    return True
 
 
 def solve1(valid_func=valid1):
     current_passport = {}
     valid_pass_count = 0
 
-    with get_input_lines_stream(FILE_NUM) as f:
-        for line in f:
-            line = line.rstrip()
+    for line in get_input_lines_stream(FILE_NUM).read().split('\n\n'):
+        segments = line.split()
 
-            if line:
-                segments = line.split(' ')
-                for key, value in map(lambda segment: segment.split(':'), segments):
-                    current_passport[key] = value
-            else:
-                valid_pass_count += valid_func(current_passport)
-                current_passport = {}
+        for key, value in map(lambda segment: segment.split(':'), segments):
+            current_passport[key] = value
 
-    valid_pass_count += valid_func(current_passport)
+        valid_pass_count += valid_func(current_passport)
+        current_passport = {}
 
     return valid_pass_count
 
