@@ -1,6 +1,6 @@
 from typing import List
 
-from common import exec_func, get_input_lines
+from common import exec_func, get_input_lines, get_input_lines_stream
 
 FILE_NUM = '05'
 
@@ -52,7 +52,30 @@ def solve1():
 
 
 def solve2():
-    pass # TODO
+    lines = sorted(map(lambda bin_num: int(bin_num, 2), get_input_lines_stream(FILE_NUM)
+                       .read()
+                       .replace('F', '0')
+                       .replace('B', '1')
+                       .replace('L', '0')
+                       .replace('R', '1')
+                       .split()
+                       ))
+
+    last_index = 0
+
+    for current_index in range(1, len(lines)):
+        if (lines[current_index] - lines[last_index]) > 1:
+            directions = bin(lines[current_index] - 1)[2:]
+            back_forward_directions = directions[:7]\
+                .replace('0', 'F')\
+                .replace('1', 'B')
+            left_right_directions = directions[7:]\
+                .replace('0', 'L')\
+                .replace('1', 'R')
+
+            return get_seat_id(back_forward_directions + left_right_directions)
+
+        last_index = current_index
 
 
 if __name__ == '__main__':
