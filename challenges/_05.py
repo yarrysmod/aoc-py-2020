@@ -39,41 +39,42 @@ def get_seat_id(command_line: str) -> int:
     return row_num * SEATS_PER_ROW + seat_num
 
 
+def get_sorted_abstract_instructions() -> List[int]:
+    return sorted(map(lambda bin_num: int(bin_num, 2), get_input_lines_stream(FILE_NUM)
+                      .read()
+                      .replace('F', '0')
+                      .replace('B', '1')
+                      .replace('L', '0')
+                      .replace('R', '1')
+                      .split()
+                      ))
+
+
+def get_actual_instruction(instruction_num: int) -> str:
+    directions = bin(instruction_num)[2:]
+    back_forward_directions = directions[:7] \
+        .replace('0', 'F') \
+        .replace('1', 'B')
+    left_right_directions = directions[7:] \
+        .replace('0', 'L') \
+        .replace('1', 'R')
+
+    return back_forward_directions + left_right_directions
+
+
 def solve1():
-    highest_seat_id = 0
+    highest_instruction = get_actual_instruction(get_sorted_abstract_instructions()[-1])
 
-    for line in get_input_lines(FILE_NUM):
-        seat_id = get_seat_id(line)
-
-        if seat_id > highest_seat_id:
-            highest_seat_id = seat_id
-
-    return highest_seat_id
+    return get_seat_id(highest_instruction)
 
 
 def solve2():
-    lines = sorted(map(lambda bin_num: int(bin_num, 2), get_input_lines_stream(FILE_NUM)
-                       .read()
-                       .replace('F', '0')
-                       .replace('B', '1')
-                       .replace('L', '0')
-                       .replace('R', '1')
-                       .split()
-                       ))
-
+    lines = get_sorted_abstract_instructions()
     last_index = 0
 
     for current_index in range(1, len(lines)):
         if (lines[current_index] - lines[last_index]) > 1:
-            directions = bin(lines[current_index] - 1)[2:]
-            back_forward_directions = directions[:7]\
-                .replace('0', 'F')\
-                .replace('1', 'B')
-            left_right_directions = directions[7:]\
-                .replace('0', 'L')\
-                .replace('1', 'R')
-
-            return get_seat_id(back_forward_directions + left_right_directions)
+            return get_seat_id(get_actual_instruction(lines[current_index] - 1))
 
         last_index = current_index
 
