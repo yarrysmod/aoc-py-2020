@@ -3,32 +3,23 @@ from common import exec_func, get_input_lines_stream
 FILE_NUM = '06'
 
 
+def get_groups():
+    return get_input_lines_stream(FILE_NUM).read().split('\n\n')
+
+
 def solve1():
-    lines = get_input_lines_stream(FILE_NUM).read().split('\n\n')
-    return sum([len(set(line.replace('\n', ''))) for line in lines])
+    return sum([len(set(group.replace('\n', ''))) for group in get_groups()])
 
 
 def solve2():
-    lines = get_input_lines_stream(FILE_NUM).read().split('\n\n')
     answered_question_count = 0
 
-    for line in lines:
-        questions = set(line.replace('\n', ''))
-        participants = line.split()
-
-        for question in questions:
-            is_answered_by_all = True
-
-            for participant in participants:
-                if question not in participant:
-                    is_answered_by_all = False
-                    break
-
-            answered_question_count += is_answered_by_all
+    for group in get_groups():
+        answered_question_count += len(set.intersection(*[set(a) for a in group.split()]))
 
     return answered_question_count
 
 
 if __name__ == '__main__':
-    exec_func(solve1)
-    exec_func(solve2)
+    exec_func(solve1, 6947)
+    exec_func(solve2, 3398)

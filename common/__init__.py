@@ -11,7 +11,12 @@ def get_input_lines_stream(file_num: str) -> TextIO:
     return open(f'./resources/{file_num}-input.txt', 'r')
 
 
-def exec_func(func: Callable):
+def exec_func(func: Callable, assert_result=None):
     start_time = time.time()
-    print(f'result: {func()}')
+    result = func()
+
+    if assert_result:
+        assert result == assert_result
+
+    print(f'result: {result}')
     print(f"time: {time.time() - start_time} seconds")
