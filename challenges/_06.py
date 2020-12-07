@@ -15,7 +15,15 @@ def solve2():
     answered_question_count = 0
 
     for group in get_groups():
-        answered_question_count += len(set.intersection(*[set(a) for a in group.split()]))
+        lines = group.split()
+        chars = lines.pop()
+
+        for line in lines:
+            for char in chars:
+                if char not in line:
+                    chars = chars.replace(char, '')
+
+        answered_question_count += len(chars)
 
     return answered_question_count
 

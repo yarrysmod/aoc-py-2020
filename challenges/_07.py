@@ -1,3 +1,4 @@
+from typing import Dict
 from common import exec_func, get_input_lines_stream
 
 FILE_NUM = '07'
@@ -5,7 +6,7 @@ FILE_NUM = '07'
 LOOP_ABORT = 'no other bags.\n'
 
 
-def get_rules() -> dict[str, list]:
+def get_rules() -> Dict[str, list]:
     rules = {}
 
     with get_input_lines_stream(FILE_NUM) as file:
@@ -30,7 +31,7 @@ def get_rules() -> dict[str, list]:
     return rules
 
 
-def has_bag(rules: dict[str, list], hit_set: set, parent_bag: str, bag_to_find: str):
+def has_bag(rules: Dict[str, list], hit_set: set, parent_bag: str, bag_to_find: str):
     bag_rules = rules[parent_bag]
 
     for child_bag, _ in bag_rules:
@@ -44,7 +45,7 @@ def has_bag(rules: dict[str, list], hit_set: set, parent_bag: str, bag_to_find: 
     return False
 
 
-def bag_accumulator(rules: dict[str, list], parent_bag: str, is_main_bag=False):
+def bag_accumulator(rules: Dict[str, list], parent_bag: str, is_main_bag=False):
     bag_rules = rules[parent_bag]
     bag_count = 0 if is_main_bag else 1
 
