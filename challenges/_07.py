@@ -5,7 +5,7 @@ FILE_NUM = '07'
 LOOP_ABORT = 'no other bags.\n'
 
 
-def get_rules():
+def get_rules() -> dict[str, list]:
     rules = {}
 
     with get_input_lines_stream(FILE_NUM) as file:
@@ -30,22 +30,23 @@ def get_rules():
     return rules
 
 
-def has_bag(rules, hit_set: set, parent_bag, bag_to_find):
+def has_bag(rules: dict[str, list], hit_set: set, parent_bag: str, bag_to_find: str):
     bag_rules = rules[parent_bag]
 
-    for child_bag, quantity in bag_rules:
-        is_requested_bag = child_bag == bag_to_find
+    for child_bag, _ in bag_rules:
+        is_hit = child_bag == bag_to_find
+        has_hit = child_bag in hit_set
 
-        if is_requested_bag or child_bag in hit_set or has_bag(rules, hit_set, child_bag, bag_to_find):
+        if is_hit or has_hit or has_bag(rules, hit_set, child_bag, bag_to_find):
             hit_set.add(child_bag)
             return True
 
     return False
 
 
-def bag_accumulator(rules, parent_bag, is_parent=False):
+def bag_accumulator(rules: dict[str, list], parent_bag: str, is_main_bag=False):
     bag_rules = rules[parent_bag]
-    bag_count = 0 if is_parent else 1
+    bag_count = 0 if is_main_bag else 1
 
     for child_bag, quantity in bag_rules:
         bag_count += quantity * bag_accumulator(rules, child_bag)
@@ -60,7 +61,9 @@ def solve1():
     bag_count = 0
 
     for parent_bag in [x for x in rules.keys() if x != bag_to_find]:
-        bag_count += has_bag(rules, hit_set, parent_bag, bag_to_find)
+        if has_bag(rules, hit_set, parent_bag, bag_to_find):
+            hit_set.add(parent_bag)
+            bag_count += 1
 
     return bag_count
 
