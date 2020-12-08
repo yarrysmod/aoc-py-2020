@@ -1,6 +1,6 @@
 from common import exec_func
 
-FILE_NUM = 'XX'
+FILE_NUM = __file__[-5:-3]
 
 
 def solve1():
