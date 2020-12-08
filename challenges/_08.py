@@ -81,4 +81,4 @@ def solve2():
 
 if __name__ == '__main__':
     exec_func(solve1, 1723)
-    exec_func(solve2)
+    exec_func(solve2, 846)
