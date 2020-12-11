@@ -36,8 +36,8 @@ def is_matching(list_a, list_b):
     return True
 
 
-def get_taken_seats(row_index, seat_index, rows):
-    seats = []
+def find_all_immediate_neighbors(row_index, seat_index, rows):
+    neighbour_count = 0
     first_row = row_index - 1 if (row_index - 1) >= 0 else 0
     last_row = row_index + 2 if (row_index + 2) < len(rows) else len(rows)
 
@@ -48,65 +48,71 @@ def get_taken_seats(row_index, seat_index, rows):
         for curr_seat in range(first_seat, last_seat):
             if curr_row == row_index and curr_seat == seat_index:
                 continue
-            seats.append(rows[curr_row][curr_seat])
 
-    return [seat for seat in seats if seat == OCCUPIED_SEAT]
+            neighbour_count += rows[curr_row][curr_seat] == OCCUPIED_SEAT
+
+    return neighbour_count
 
 
-def change_rows(original_rows, rows, seats_callback=get_taken_seats, taken_tolerance=4):
+def check_has_changed(original_rows, rows, seats_callback=find_all_immediate_neighbors, taken_tolerance=4):
+    has_changed = False
+
     for row_index, row in enumerate(rows):
         for seat_index, seat in enumerate(row):
             if seat == FLOOR:
                 continue
 
-            occupied_neighbors = seats_callback(row_index, seat_index, original_rows).count(OCCUPIED_SEAT)
+            neighbour_count = seats_callback(row_index, seat_index, original_rows)
 
-            if seat == FREE_SEAT and occupied_neighbors == 0:
+            if seat == FREE_SEAT and neighbour_count == 0:
                 row[seat_index] = OCCUPIED_SEAT
-            elif seat == OCCUPIED_SEAT and occupied_neighbors >= taken_tolerance:
+                has_changed = True
+            elif seat == OCCUPIED_SEAT and neighbour_count >= taken_tolerance:
                 row[seat_index] = FREE_SEAT
+                has_changed = True
 
-    return rows
+    return has_changed
 
 
-def solve1(is_sample=False, seats_callback=get_taken_seats, taken_tolerance=4):
+def solve1(is_sample=False, seats_callback=find_all_immediate_neighbors, taken_tolerance=4):
     lines = get_input_lines(FILE_NUM, SUBFOLDER if is_sample else None)
     rows = [list(row) for row in lines]
-    original_rows = deepcopy(rows)
 
-    while not is_matching(original_rows, change_rows(original_rows, rows, seats_callback, taken_tolerance)):
-        original_rows = deepcopy(rows)
+    while check_has_changed(deepcopy(rows), rows, seats_callback, taken_tolerance):
+        pass  # wait.. that's illegal!
 
-    pretty_print = '\n'.join([' '.join(row) for row in rows])
-    count_seats = pretty_print.count(OCCUPIED_SEAT)
+    count_seats = sum([row.count(OCCUPIED_SEAT) for row in rows])
 
-    print('\n' + pretty_print + '\n')
+    print('\n'.join([' '.join(row) for row in rows]))
 
     return count_seats
 
 
 def find_all_direction_neighbors(row_index, seat_index, rows):
+    x_length = len(rows[0])
+    y_length = len(rows)
     direction_pending = [True] * 8
-    taken_seats = []
+    neighbour_count = 0
     diff = 1
 
     while direction_pending.count(True) > 0:
         for index, coord_gen in list(compress(enumerate(coord_gens), direction_pending)):
             x, y = coord_gen(row_index, seat_index, diff)
+            has_valid_coordinates = 0 <= x < x_length and 0 <= y < y_length
 
-            if (x < 0 or x >= len(rows[0])) or (y < 0 or y >= len(rows)):
+            if has_valid_coordinates:
+                seat = rows[x][y]
+
+                if seat != FLOOR:
+                    neighbour_count += seat == OCCUPIED_SEAT
+                    direction_pending[index] = False
+            else:
                 direction_pending[index] = False
                 continue
 
-            seat = rows[x][y]
-
-            if seat != FLOOR:
-                taken_seats.append(OCCUPIED_SEAT) if seat == OCCUPIED_SEAT else None
-                direction_pending[index] = False
-
         diff += 1
 
-    return taken_seats
+    return neighbour_count
 
 
 def solve2(is_sample=False):
