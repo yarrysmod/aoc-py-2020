@@ -1,5 +1,4 @@
 from copy import deepcopy
-from itertools import compress
 
 from common import exec_func, get_input_lines
 
@@ -10,48 +9,9 @@ FLOOR = '.'
 FREE_SEAT = 'L'
 OCCUPIED_SEAT = '#'
 
-coord_gens = [
-    # horizontal
-    lambda x, y, diff: [x + diff, y],
-    lambda x, y, diff: [x - diff, y],
-
-    # vertical
-    lambda x, y, diff: [x, y + diff],
-    lambda x, y, diff: [x, y - diff],
-
-    # diagonal
-    lambda x, y, diff: [x - diff, y - diff],
-    lambda x, y, diff: [x + diff, y + diff],
-
-    lambda x, y, diff: [x - diff, y + diff],
-    lambda x, y, diff: [x + diff, y - diff],
-]
-
-
-def is_matching(list_a, list_b):
-    for index in range(len(list_a)):
-        if list_a[index] != list_b[index]:
-            return False
-
-    return True
-
 
 def find_all_immediate_neighbors(row_index, seat_index, rows):
-    neighbour_count = 0
-    first_row = row_index - 1 if (row_index - 1) >= 0 else 0
-    last_row = row_index + 2 if (row_index + 2) < len(rows) else len(rows)
-
-    first_seat = seat_index - 1 if (seat_index - 1) >= 0 else 0
-    last_seat = seat_index + 2 if (seat_index + 2) < len(rows[0]) else len(rows[0])
-
-    for curr_row in range(first_row, last_row):
-        for curr_seat in range(first_seat, last_seat):
-            if curr_row == row_index and curr_seat == seat_index:
-                continue
-
-            neighbour_count += rows[curr_row][curr_seat] == OCCUPIED_SEAT
-
-    return neighbour_count
+    return find_all_neighbors(row_index, seat_index, rows, True)
 
 
 def check_has_changed(original_rows, rows, seats_callback=find_all_immediate_neighbors, taken_tolerance=4):
@@ -88,35 +48,37 @@ def solve1(is_sample=False, seats_callback=find_all_immediate_neighbors, taken_t
     return count_seats
 
 
-def find_all_direction_neighbors(row_index, seat_index, rows):
+def find_all_neighbors(row_index, seat_index, rows, consider_floor=False):
     x_length = len(rows[0])
     y_length = len(rows)
-    direction_pending = [True] * 8
     neighbour_count = 0
-    diff = 1
 
-    while direction_pending.count(True) > 0:
-        for index, coord_gen in list(compress(enumerate(coord_gens), direction_pending)):
-            x, y = coord_gen(row_index, seat_index, diff)
-            has_valid_coordinates = 0 <= x < x_length and 0 <= y < y_length
-
-            if has_valid_coordinates:
-                seat = rows[x][y]
-
-                if seat != FLOOR:
-                    neighbour_count += seat == OCCUPIED_SEAT
-                    direction_pending[index] = False
-            else:
-                direction_pending[index] = False
+    for y_diff in [-1, 0, 1]:
+        for x_diff in [-1, 0, 1]:
+            # early abort if it's the same seat
+            if x_diff == 0 and y_diff == 0:
                 continue
 
-        diff += 1
+            seat_y = row_index + y_diff
+            seat_x = seat_index + x_diff
+
+            # check until it either reaches either end
+            while 0 <= seat_y < y_length and 0 <= seat_x < x_length:
+                seat = rows[seat_y][seat_x]
+
+                # skip checking the floor or do if it's part 1
+                if seat != FLOOR or consider_floor:
+                    neighbour_count += seat == OCCUPIED_SEAT
+                    break
+
+                seat_y = seat_y + y_diff
+                seat_x = seat_x + x_diff
 
     return neighbour_count
 
 
 def solve2(is_sample=False):
-    return solve1(is_sample, find_all_direction_neighbors, 5)
+    return solve1(is_sample, find_all_neighbors, 5)
 
 
 if __name__ == '__main__':
