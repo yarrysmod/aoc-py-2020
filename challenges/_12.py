@@ -1,7 +1,7 @@
+from challenges._template import SAMPLES_FOLDER
 from common import exec_func, get_input_lines
 
 FILE_NUM = __file__[-5:-3]
-SUBFOLDER = 'samples'
 
 X_MOVES = ['E', 'W']
 Y_MOVES = ['N', 'S']
@@ -13,7 +13,7 @@ ALL_MOVES = ['E', 'S', 'W', 'N']
 
 
 def get_instructions(is_sample):
-    lines = get_input_lines(FILE_NUM, SUBFOLDER if is_sample else None)
+    lines = get_input_lines(FILE_NUM, SAMPLES_FOLDER if is_sample else None)
     instructions = [[inst[0], int(inst[1:])] for inst in lines]
 
     return instructions

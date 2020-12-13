@@ -1,9 +1,9 @@
 from copy import deepcopy
 
+from challenges._template import SAMPLES_FOLDER
 from common import exec_func, get_input_lines
 
 FILE_NUM = __file__[-5:-3]
-SUBFOLDER = 'samples'
 
 FLOOR = '.'
 FREE_SEAT = 'L'
@@ -35,7 +35,7 @@ def check_has_changed(original_rows, rows, seats_callback=find_all_immediate_nei
 
 
 def solve1(is_sample=False, seats_callback=find_all_immediate_neighbors, taken_tolerance=4):
-    lines = get_input_lines(FILE_NUM, SUBFOLDER if is_sample else None)
+    lines = get_input_lines(FILE_NUM, SAMPLES_FOLDER if is_sample else None)
     rows = [list(row) for row in lines]
 
     while check_has_changed(deepcopy(rows), rows, seats_callback, taken_tolerance):
