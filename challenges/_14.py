@@ -20,6 +20,14 @@ def get_mems(values: List[str]):
     return mems
 
 
+def get_converted_int(reverse_bin: List[str]):
+    return int(''.join(reverse_bin[::-1]), 2)
+
+
+def get_reversed_bin_list(num: int, fill_zeroes):
+    return list(bin(num)[2:].zfill(fill_zeroes))[::-1]
+
+
 def solve1(is_sample=False):
     lines = get_input_lines_stream(FILE_NUM, SAMPLES_FOLDER if is_sample else None).read()
     values = [line.rstrip().split('\n') for line in lines.split('mask = ')[1:]]
@@ -31,7 +39,7 @@ def solve1(is_sample=False):
         mems = get_mems(value[1:])
 
         for mem_reg, mem_value in mems:
-            bin_num_reversed = list(bin(mem_value)[2:].zfill(min_mem_length))[::-1]
+            bin_num_reversed = get_reversed_bin_list(mem_value, min_mem_length)
 
             for change_reg, change_val in change_bits:
                 digit = bin_num_reversed[change_reg]
@@ -39,20 +47,60 @@ def solve1(is_sample=False):
                 if digit != change_val:
                     bin_num_reversed[change_reg] = str(1 - int(digit))
 
-            value_memory[mem_reg] = int(''.join(bin_num_reversed[::-1]), 2)
+            value_memory[mem_reg] = get_converted_int(bin_num_reversed)
 
     return sum([int(val) for val in value_memory.values()])
+
+
+def get_memory_regs(mem_reg, change_bits):
+    bin_reg_reversed = get_reversed_bin_list(mem_reg, 0)
+    swap_indexes = []
+    magic_addresses = []
+
+    for index in range(len(bin_reg_reversed)):
+        change_bit = change_bits[index]
+
+        if change_bit == '1':
+            bin_reg_reversed[index] = '1'
+        elif change_bit == NO_CHANGE_VALUE:
+            swap_indexes.append(index)
+
+    if len(swap_indexes) > 0:
+        swap_pos_count = len(swap_indexes)
+        for swap_value in range(2 ** swap_pos_count):
+            swap_bin_list = get_reversed_bin_list(swap_value, swap_pos_count)
+
+            for bin_index in range(len(swap_indexes)):
+                swap_num = swap_bin_list[bin_index]
+                swap_index = swap_indexes[bin_index]
+
+                bin_reg_reversed[swap_index] = swap_num
+
+            magic_addresses.append(get_converted_int(bin_reg_reversed))
+    else:
+        magic_addresses.append(get_converted_int(bin_reg_reversed))
+
+    return magic_addresses
 
 
 def solve2(is_sample=False):
     lines = get_input_lines_stream(FILE_NUM, SAMPLES_FOLDER if is_sample else None).read()
     values = [line.rstrip().split('\n') for line in lines.split('mask = ')[1:]]
     value_memory = {}
-    # TODO
+
+    for value in values:
+        change_bits = value[0][::-1]
+        mems = get_mems(value[1:])
+
+        for mem_reg, mem_value in mems:
+            for nested_mem_reg in get_memory_regs(mem_reg, change_bits):
+                value_memory[nested_mem_reg] = mem_value
+
+    return sum([int(val) for val in value_memory.values()])
 
 
 if __name__ == '__main__':
     exec_func(lambda: solve1(True))
     exec_func(solve1)
-    # exec_func(lambda: solve2(True))
-    # exec_func(solve2)
+    exec_func(lambda: solve2(True))
+    exec_func(solve2)
