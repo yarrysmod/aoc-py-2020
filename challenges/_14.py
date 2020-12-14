@@ -45,7 +45,10 @@ def solve1(is_sample=False):
 
 
 def solve2(is_sample=False):
-    pass
+    lines = get_input_lines_stream(FILE_NUM, SAMPLES_FOLDER if is_sample else None).read()
+    values = [line.rstrip().split('\n') for line in lines.split('mask = ')[1:]]
+    value_memory = {}
+    # TODO
 
 
 if __name__ == '__main__':
