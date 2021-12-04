@@ -4,14 +4,13 @@ FILE_NUM = __file__[-5:-3]
 SAMPLES_FOLDER = 'samples'
 HOME_DIR = '2021'
 
+DRAWN_DIGIT = '-1'
+
 
 def get_boards(formatted_lines):
     return [
-        [
-            [
-                [z, False] for z in y.split()
-            ] for y in x.split('\n')
-        ] for x in formatted_lines[1:]
+        [y.split() for y in x.split('\n')]
+        for x in formatted_lines[1:]
     ]
 
 
@@ -53,15 +52,15 @@ def solve2(is_sample=False):
 
 def activate_board_value(value, board):
     for row in board:
-        for cell in row:
-            if cell[0] == value:  # exit condition
-                cell[1] = True
+        for cell_index in range(0, len(row)):
+            if row[cell_index] == value:  # exit condition
+                row[cell_index] = DRAWN_DIGIT
 
                 return True
 
 
 def is_winning_sequence(sequence):
-    return all(x[1] is True for x in sequence)
+    return all(x is DRAWN_DIGIT for x in sequence)
 
 
 def is_winner(board):
@@ -79,20 +78,14 @@ def is_winner(board):
         if is_winning_sequence(column):
             return True
 
-    # check the diagonals
-    # diagonal_a = [board[x][x] for x in range(0, row_length)]
-    # diagonal_b = [board[row_length - x][x - 1] for x in range(row_length, 0, -1)]
-    #
-    # return is_winning_sequence(diagonal_a) or is_winning_sequence(diagonal_b)
-
 
 def get_unmarked(board):
     unmarked = []
 
     for row in board:
         for cell in row:
-            if not cell[1]:
-                unmarked.append(int(cell[0]))
+            if cell is not DRAWN_DIGIT:
+                unmarked.append(int(cell))
 
     return unmarked
 
